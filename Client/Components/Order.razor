@@ -1,5 +1,4 @@
-﻿@using OrdersApp.Client.Services;
-@inject IApiClientService api
+﻿@inject IApiClientService api
 
 <div class="row mt-2" style="background-color:#161629; color:azure; padding:5px">
     <div class="col"><h3>@Model!.ClientName</h3></div>
@@ -8,12 +7,11 @@
     <div class="col">@Model.CreatedAt!.ToShortDateString()</div>
     <div class="col">
         <div class="d-grid gap-3 d-inline-flex">
-            @*<button class="btn-dark btn-sm">Order ditales</button>*@
-            <NavLink class="nav-link" href="order">
-                <button class="btn-dark btn-sm">Order ditales</button>
+            <NavLink class="nav-link" href="@rout">
+                <button class="btn-dark">Order ditales</button>
             </NavLink>
             <button class="btn-dark btn-sm" @onclick="@OpenModalDialog">Change status</button>
-            <button class="btn-danger btn-sm" @onclick="@DeleteOrder" disabled=@isActive>Delete order</button>
+            <button class="btn-danger btn-sm" @onclick="@DeleteOrder" disabled=@isDisabled>Delete order</button>
         </div>
     </div>
 </div>
@@ -29,7 +27,8 @@
 
 @code {
     private bool isChangeDialogOpen = false;
-    private bool isActive;
+    private bool isDisabled;
+    private string rout = null!;
 
     [Parameter]
     public OrderResponse? Model { get; set; }
@@ -39,7 +38,8 @@
 
     protected override void OnInitialized()
     {
-        isActive = Model!.Status != Status.New;
+        isDisabled = Model!.Status != Status.New;
+        rout = $"order/{Model.Id}";
         base.OnInitialized();
     }
 

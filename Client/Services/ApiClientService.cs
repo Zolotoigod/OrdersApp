@@ -34,7 +34,7 @@ namespace OrdersApp.Client.Services
         public async Task<OrderResponse> GetOrder(Guid id)
         {
             var response = await client.GetAsync($"{BaseApi}/{id}");
-            response.EnsureSuccessStatusCode();
+            response!.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<OrderResponse>(jsonOptions);
             return result!;
         }

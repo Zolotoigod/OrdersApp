@@ -7,22 +7,21 @@
         <h2>List of orders</h2>
     </div>
 
-    <div class="d-inline">
+    <div class="d-inline mt-4">
         <FilterPanel Filter="@filterRequest" />
 
-        <div class="mt-4">
-            <button class="btn-primary"
+        <div class="container-fluid justify-content-end text-end">
+            <button class="btn-dark m-3"
                     @onclick="@(async () => await FetchData(filterRequest))">
                 Search
             </button>
-        </div>
 
-        <div class="mt-4">
-            <button class="btn-primary"
+            <button class="btn-dark m-3"
                     @onclick="@OpenModal">
                 Add new order
             </button>
         </div>
+        
     </div>
 </div>
 
@@ -46,7 +45,7 @@ else
 
 @code {
     private bool isModalOpen = false;
-    private IList<OrderResponse>? Orders;
+    private IList<OrderResponse>? Orders = new List<OrderResponse>();
     private FilterRequestView filterRequest =
     new FilterRequestView()
     {

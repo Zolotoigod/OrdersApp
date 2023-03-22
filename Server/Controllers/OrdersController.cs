@@ -42,7 +42,7 @@ namespace OrdersApp.Server.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateById(Guid id, UpdateRequest request)
+        public async Task<IActionResult> UpdateById(Guid id, [FromBody] UpdateRequest request)
         {
             await service.UpdateById(id, request);
             return Ok();
@@ -66,16 +66,16 @@ namespace OrdersApp.Server.Controllers
             return Ok();
         }
 
-        [HttpPost("line/{id}")]
+        [HttpPost("line/{orderId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> AddLine(Guid orderId, LineRequest request)
+        public async Task<IActionResult> AddLine(Guid orderId, [FromBody] LineRequest request)
         {
             await service.AddLine(orderId, request);
             return Ok();
         }
 
-        [HttpDelete("line/{id}")]
+        [HttpDelete("line/{lineId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RemoveLine(Guid lineId)

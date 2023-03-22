@@ -6,7 +6,7 @@
      @ondblclick="@ModalClose">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header" style="background-color:#161629; color:azure">
                 <h4 class="modal-title">@Title</h4>
                 <button type="button" 
                     class="btn-close" 
@@ -14,7 +14,7 @@
                     aria-label="Close"
                         @onclick="@ModalClose"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body text-center" style="background-color:#4f2424; color:azure">
                 <InputSelect @bind-Value="@Model!.Status">
                     @foreach (var item in Enum.GetValues(typeof(Status)))
                     {
@@ -22,8 +22,8 @@
                     }
                 </InputSelect>
             </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-primary" @onclick=@ChangeStatus>Set status</button>
+            <div class="modal-footer justify-content-center" style="background-color:#4f2424; color:azure">
+                <button type="button" class="btn btn-dark" @onclick=@ChangeStatus>Set status</button>
             </div>
         </div>
     </div>

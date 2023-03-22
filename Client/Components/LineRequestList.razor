@@ -19,7 +19,7 @@
                    @bind:event="oninput">
         </div>
         <div class="col">
-            <button class="btn-primary"
+            <button class="btn-dark"
                     @onclick="AddProduct">
                 Add product
             </button>
@@ -28,17 +28,17 @@
 
     @foreach (var item in Lines)
     {
-                <div class="row">
-                    <div class="col">
-                        <div>Product name - @item.ProductName</div>
-                    </div>        
-                    <div class="col">
-                        <div>Product price - @item.Price.ToString("C")</div>
-                    </div>
-                    <div class="col d-flex justify-content-end align-items-center">
-                        <button class="btn-primary" @onclick="@(() => RemoveProduct(item.ProductName!))">🗙</button>
-                    </div>
-                </div>
+        <div class="row d-flex justify-content-end align-items-center m-2 p-3" style="border:solid; border-radius:10px; color:azure">
+            <div class="col">
+                <div>Product name - @item.ProductName</div>
+            </div>
+            <div class="col">
+                <div>Product price - @item.Price.ToString("C")</div>
+            </div>
+            <div class="col">
+                <button class="btn-danger" @onclick="@(() => RemoveProduct(item.ProductName!))">🗙</button>
+            </div>
+        </div>
     }
 </div>
 
@@ -58,10 +58,10 @@
     private void AddProduct()
     {
         var line = new LineRequest()
-            {
-                ProductName = setProductName,
-                Price = setPrice!.Value,
-            };
+        {
+            ProductName = setProductName,
+            Price = setPrice!.Value,
+        };
 
         Lines.Add(line);
         setProductName = string.Empty;

@@ -121,19 +121,23 @@ namespace OrdersApp.Server.Repositories
                 Order = order,
             };
 
-            order.Lines.Add(line);
+            context.Orders.Update(order);
+            order.Price += request.Price;
+
+            await context.OrdersLine.AddAsync(line);
 
             await context.SaveChangesAsync();
         }
 
         public async Task RemoveLine(Guid lineId)
         {
-            var order = await context.Orders
-            .Include(o => o.Lines)
-            .FirstAsync(o => o.Lines.Any(l => l.Id == lineId));
+            var oreder = await context.Orders
+                .Include(o => o.Lines)
+                .FirstAsync(o => o.Lines.Any(l => l.Id == lineId));
 
-            var line = order.Lines.First(l => l.Id == lineId);
+            var line = oreder.Lines.First(l => l.Id == lineId);
 
+            oreder.Price -= line.Price;
             context.OrdersLine.Remove(line);
             await context.SaveChangesAsync();
         }

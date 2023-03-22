@@ -8,9 +8,9 @@
     role="dialog"
     @ondblclick="@ModalCancel">
     <div class="modal-dialog">
-        <div style="width:150%;">
+        <div style="width:130%;">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header" style="background-color:#161629; color:azure">
                     <h4 class="modal-title">@Title</h4>
                     <button type="button" 
                         class="btn-close" 
@@ -18,12 +18,9 @@
                         aria-label="Close"
                         @onclick="@ModalCancel"></button>
                 </div>
-                <div class="modal-body">
-                    <OrderInput Input="@input" />
-                    <LineList Lines="@Lines"/>
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-primary" @onclick=@ModalOk>Submit</button>
+                <div class="modal-body" style="background-color:#4f2424">
+                    <OrderInput Input="@input" OnChangeSave="@ModalOk"/>
+                    <LineRequestList Lines="@Lines"/>
                 </div>
             </div>
         </div>
@@ -32,7 +29,7 @@
 
 @code {
     private List<LineRequest> Lines = new List<LineRequest>();
-    private OrderData input = new OrderData();
+    private UpdateRequest input = new UpdateRequest();
 
     [Parameter]
     public EventCallback ResetOrders { get; set; }
