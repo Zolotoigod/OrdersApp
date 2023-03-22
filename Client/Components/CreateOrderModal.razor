@@ -1,0 +1,63 @@
+﻿@using OrdersApp.Client.Services;
+@inject IApiClientService api
+
+<div class="modal fade show justify-content-center" 
+    id="orderModal" 
+    style="display:flex; background-color: rgba(10,10,10,.8);" 
+    aria-modal="true"
+    role="dialog"
+    @ondblclick="@ModalCancel">
+    <div class="modal-dialog">
+        <div style="width:150%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">@Title</h4>
+                    <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Close"
+                        @onclick="@ModalCancel"></button>
+                </div>
+                <div class="modal-body">
+                    <OrderInput Input="@input" />
+                    <LineList Lines="@Lines"/>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" @onclick=@ModalOk>Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<LineRequest> Lines = new List<LineRequest>();
+    private OrderData input = new OrderData();
+
+    [Parameter]
+    public EventCallback ResetOrders { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+
+    private async Task ModalCancel()
+    {
+        await OnClose.InvokeAsync(false);
+    }
+
+    private async Task ModalOk()
+    {
+        var request = new OrderRequest()
+        {
+            ClientName = input.ClientName!,
+            AdditionalInfo = input.AdditionalInfo,
+            Lines = Lines,
+        };
+        await api.CreateOrder(request);
+        await ResetOrders.InvokeAsync();
+        await OnClose.InvokeAsync(true);
+    }
+}

@@ -1,0 +1,70 @@
+﻿<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <input type="text"
+                   class="form-control"
+                   aria-label="Sizing example input"
+                   aria-describedby="inputGroup-sizing-default"
+                   placeholder="Product name"
+                   @bind="@setProductName"
+                   @bind:event="oninput">
+        </div>
+        <div class="col">
+            <input type="number"
+                   class="form-control"
+                   aria-label="Sizing example input"
+                   aria-describedby="inputGroup-sizing-default"
+                   placeholder="Product price"
+                   @bind="@setPrice"
+                   @bind:event="oninput">
+        </div>
+        <div class="col">
+            <button class="btn-primary"
+                    @onclick="AddProduct">
+                Add product
+            </button>
+        </div>
+    </div>
+
+    @foreach (var item in Lines)
+    {
+                <div class="row">
+                    <div class="col">
+                        <div>Product name - @item.ProductName</div>
+                    </div>        
+                    <div class="col">
+                        <div>Product price - @item.Price.ToString("C")</div>
+                    </div>
+                    <div class="col d-flex justify-content-end align-items-center">
+                        <button class="btn-primary" @onclick="@(() => RemoveProduct(item.ProductName!))">🗙</button>
+                    </div>
+                </div>
+    }
+</div>
+
+@code {
+    private string? setProductName;
+    private decimal? setPrice;
+
+    [Parameter]
+    public List<LineRequest> Lines { get; set; } = new List<LineRequest>();
+
+    private void RemoveProduct(string productName)
+    {
+        var item = Lines.First(l => l.ProductName == productName);
+        Lines.Remove(item);
+    }
+
+    private void AddProduct()
+    {
+        var line = new LineRequest()
+            {
+                ProductName = setProductName,
+                Price = setPrice!.Value,
+            };
+
+        Lines.Add(line);
+        setProductName = string.Empty;
+        setPrice = 0;
+    }
+}

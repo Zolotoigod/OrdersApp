@@ -1,0 +1,94 @@
+﻿@page "/"
+@using OrdersApp.Client.Services;
+@inject IApiClientService api
+
+<div class="container-fluid" style="background-color:#4e0d0d; color:azure">
+    <div class="container-fluid text-center">
+        <h2>List of orders</h2>
+    </div>
+
+    <div class="d-inline">
+        <FilterPanel Filter="@filterRequest" />
+
+        <div class="mt-4">
+            <button class="btn-primary"
+                    @onclick="@(async () => await FetchData(filterRequest))">
+                Search
+            </button>
+        </div>
+
+        <div class="mt-4">
+            <button class="btn-primary"
+                    @onclick="@OpenModal">
+                Add new order
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (isModalOpen)
+{
+    <CreateOrderModal
+        Title="Create new order"
+        OnClose="@OnModalClose"
+        ResetOrders="@FetchData" />
+}
+
+@if(Orders is null)
+{
+    <h2>Loading...</h2>
+}
+else
+{
+    <OrderList Orders=Orders 
+        ResetOrders="@FetchData"/>
+}
+
+@code {
+    private bool isModalOpen = false;
+    private IList<OrderResponse>? Orders;
+    private FilterRequestView filterRequest =
+    new FilterRequestView()
+    {
+            Skip = 0,
+            Take = 10,
+            Status = StatusView.All,
+            From = DateTime.Parse("01/01/1970"),
+            To = DateTime.UtcNow.AddDays(1),
+            ClientName = null,
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchData(filterRequest);
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnModalClose(bool accepted)
+    {
+        if (accepted)
+        {
+            await FetchData(filterRequest);
+        }
+
+        isModalOpen = false;
+        StateHasChanged();
+    }
+
+    private void OpenModal()
+    {
+        isModalOpen = true;
+    }
+
+    private async Task FetchData()
+    {
+        var response = await api.FindOrders(filterRequest);
+        Orders = response;
+    }
+
+    private async Task FetchData(FilterRequestView request)
+    {
+        var response = await api.FindOrders(request);
+        Orders = response;
+    }
+}
