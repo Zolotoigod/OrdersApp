@@ -13,5 +13,6 @@ namespace OrdersApp.Server.Servises
         Task RemoveLine(Guid lineId);
         Task SetStatus(Guid id, Status newStasus);
         Task UpdateById(Guid id, UpdateRequest request);
+        Task<int> GetCount(FilterRequest request);
     }
 }

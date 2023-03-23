@@ -2,11 +2,11 @@
 @inject IApiClientService api
 
 <div class="container-fluid" style="background-color:#161629; color:azure">
-    <div class="d-flex justify-content-start ms-3">
+    <div class="d-flex justify-content-between ms-3">
+        <h2>Order ditales</h2>
         <NavLink class="nav-link" href="/">
             <button class="btn-dark">Back</button>
-        </NavLink>
-        <h2>Order ditales</h2>
+        </NavLink>        
     </div>
     <div class="border-light border-2 ms-3 mt-2 p-4" style="background-color:#4e0d0d; color:azure">
         @if (isDisabled)

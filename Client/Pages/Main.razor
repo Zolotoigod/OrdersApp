@@ -12,7 +12,7 @@
 
         <div class="container-fluid justify-content-end text-end">
             <button class="btn-dark m-3"
-                    @onclick="@(async () => await FetchData(filterRequest))">
+                    @onclick="@OnSearch">
                 Search
             </button>
 
@@ -41,10 +41,18 @@ else
 {
     <OrderList Orders=Orders 
         ResetOrders="@FetchData"/>
+      <Pagination PageCount="@pageCount"
+          OnPageSet="@GetPage"
+          CurrentPage="@currentPage"/>
 }
 
 @code {
+    private const int ordersOnPage = 10; // can modify to parametr
+
+    private int pageCount = 0;
     private bool isModalOpen = false;
+    private int totalOrders = 0;
+    private int currentPage = 1;
     private IList<OrderResponse>? Orders = new List<OrderResponse>();
     private FilterRequestView filterRequest =
     new FilterRequestView()
@@ -59,6 +67,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        filterRequest.Take = ordersOnPage;
+        filterRequest.Skip = ordersOnPage * (currentPage - 1);
         await FetchData(filterRequest);
         await base.OnInitializedAsync();
     }
@@ -82,12 +92,33 @@ else
     private async Task FetchData()
     {
         var response = await api.FindOrders(filterRequest);
+        totalOrders = await api.GetCount(filterRequest);
         Orders = response;
+        StateHasChanged();
     }
 
     private async Task FetchData(FilterRequestView request)
     {
+        Orders = null;
         var response = await api.FindOrders(request);
+        totalOrders = await api.GetCount(request);
+        pageCount = totalOrders / ordersOnPage + 1;
         Orders = response;
+        StateHasChanged();
+    }
+
+    private async Task GetPage(int pageNumber)
+    {
+        currentPage = pageNumber;
+        filterRequest.Skip = (pageNumber - 1) * ordersOnPage;
+        await FetchData(filterRequest);
+    }
+
+    private async Task OnSearch()
+    {
+        currentPage = 1;
+        filterRequest.Skip = 0;
+        await FetchData(filterRequest);
+        StateHasChanged();
     }
 }

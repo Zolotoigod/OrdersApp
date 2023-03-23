@@ -83,5 +83,13 @@ namespace OrdersApp.Server.Controllers
             await service.RemoveLine(lineId);
             return Ok();
         }
+
+        [HttpGet("count")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetCount([FromQuery] FilterRequest request)
+        {
+            return new OkObjectResult(await service.GetCount(request));
+        }
     }
 }

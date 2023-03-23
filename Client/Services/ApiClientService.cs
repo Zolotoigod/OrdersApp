@@ -86,6 +86,23 @@ namespace OrdersApp.Client.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task<int> GetCount(FilterRequestView filter)
+        {
+            var request = new FilterRequest()
+            {
+                Skip = filter.Skip,
+                Take = filter.Take,
+                ClientNameFilter = filter.ClientName,
+                StatusFilter = filter.Status!.Value.ToEntity(),
+                From = filter.From,
+                To = filter.To,
+            };
+            var response = await client.GetAsync($"{BaseApi}/count{ToQueryString(request)}");
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<int>(jsonOptions);
+            return result;
+        }
+
         private static string ToQueryString(FilterRequest request)
         {
             string status = request.StatusFilter != null

@@ -133,5 +133,8 @@ namespace OrdersApp.Server.Servises
                 throw;
             }
         }
+
+        public async Task<int> GetCount(FilterRequest request) => 
+            await repository.GetCount(request);
     }
 }

@@ -27,7 +27,7 @@
 
 @code {
     private bool isChangeDialogOpen = false;
-    private bool isDisabled;
+    private bool isDisabled = false;
     private string rout = null!;
 
     [Parameter]
@@ -46,6 +46,7 @@
     private async Task OnStatusChange()
     {
         await api.SetOrderStatus(Model!.Id, Model.Status);
+        isDisabled = Model!.Status != Status.New;
         isChangeDialogOpen = false;
         StateHasChanged();
     }

@@ -1,0 +1,65 @@
+﻿<div class="container text-center">
+    <div class="btn-group m-2" role="group" aria-label="Basic radio toggle button group">
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+        <label class="btn btn-outline-dark" for="btnradio2" @onclick="@(() => SetPage(1))">First</label>
+
+        @foreach(var item in pages)
+        {
+            if (item.IsCurrent)
+            {
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked>
+                <label class="btn btn-outline-dark" for="btnradio2" @onclick="@(() => SetPage(item.Number))">@item.Number</label>
+            }
+            else
+            {
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                <label class="btn btn-outline-dark" for="btnradio2" @onclick="@(() => SetPage(item.Number))">@item.Number</label>
+            }
+        }
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+        <label class="btn btn-outline-dark" for="btnradio2" @onclick="@(() => SetPage(PageCount))">Last</label>
+    </div>
+</div>
+
+@code {
+    private IList<Page> pages = new List<Page>();
+    private int startNumber = 0;
+    private int endNumber = 3;
+
+    [Parameter]
+    public int CurrentPage { get; set; }
+
+    [Parameter]
+    public int PageCount { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnPageSet { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitBoeders();
+        CreatePages();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task SetPage(int page)
+    {
+        CurrentPage = page;
+        await OnPageSet.InvokeAsync(page);
+    }
+
+    private void InitBoeders()
+    {
+        startNumber = CurrentPage - 5 < 0 ? 0 : CurrentPage - 5;
+        endNumber = CurrentPage + 5 > PageCount ? PageCount : CurrentPage + 5;
+    }
+
+    private void CreatePages()
+    {
+        for (int i = startNumber; i < endNumber; i++)
+        {
+            pages.Add(new Page(i + 1, i + 1 == CurrentPage));
+        }
+    }
+}

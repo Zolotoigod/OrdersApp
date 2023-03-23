@@ -46,12 +46,12 @@ namespace OrdersApp.Server.Repositories
             {
                 return await context.Orders
                 .Include(o => o.Lines)
-                .Skip(request.Skip)
-                .Take(request.Take)
                 .Where(
                     o => o.CreatedAt > from
                     & o.CreatedAt < to
                     & o.ClientName.Contains(clientName))
+                .Skip(request.Skip)
+                .Take(request.Take)
                 .OrderBy(o => o.CreatedAt)
                 .ToListAsync();
             }
@@ -59,13 +59,13 @@ namespace OrdersApp.Server.Repositories
             {
                 return await context.Orders
                 .Include(o => o.Lines)
-                .Skip(request.Skip)
-                .Take(request.Take)
                 .Where(
                     o => o.CreatedAt > from
                     & o.CreatedAt < to
                     & o.Status == request.StatusFilter
                     & o.ClientName.Contains(clientName))
+                .Skip(request.Skip)
+                .Take(request.Take)
                 .OrderBy(o => o.CreatedAt)
                 .ToListAsync();
             }
@@ -89,10 +89,14 @@ namespace OrdersApp.Server.Repositories
                 .Include(o => o.Lines)
                 .FirstAsync(o => o.Id == id);
 
-            context.OrdersLine.RemoveRange(order.Lines);
-            context.Orders.Remove(order);
+            if(order.Status == Status.New)
+            {
+                context.OrdersLine.RemoveRange(order.Lines);
+                context.Orders.Remove(order);
+                await context.SaveChangesAsync();
+            }
 
-            await context.SaveChangesAsync();
+            throw new InvalidOperationException("Impossible to delete an order with a status other than new");
         }
 
         public async Task SetStatus(Guid id, Status newStasus)
@@ -140,6 +144,41 @@ namespace OrdersApp.Server.Repositories
             oreder.Price -= line.Price;
             context.OrdersLine.Remove(line);
             await context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetCount(FilterRequest request)
+        {
+            var from = request.From != null
+                ? request.From
+                : DateTime.MinValue;
+
+            var to = request.To != null
+                ? request.To
+                : DateTime.UtcNow;
+
+            var clientName = request.ClientNameFilter != null
+                ? request.ClientNameFilter
+                : string.Empty;
+
+            if (request.StatusFilter == null)
+            {
+                return await context.Orders
+                .Where(
+                    o => o.CreatedAt > from
+                    & o.CreatedAt < to
+                    & o.ClientName.Contains(clientName))
+                .CountAsync();
+            }
+            else
+            {
+                return await context.Orders
+                .Where(
+                    o => o.CreatedAt > from
+                    & o.CreatedAt < to
+                    & o.Status == request.StatusFilter
+                    & o.ClientName.Contains(clientName))
+                .CountAsync();
+            }
         }
 
         private IList<OrderLine> SetIds(IList<OrderLine> orderLines)
