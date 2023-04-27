@@ -1,0 +1,34 @@
+﻿<div class="row" style="background-color:#4e0d0d; color:azure">
+    <div class="col mt-4">
+        <input type="text"
+               class="form-control"
+               placeholder="Client name filter"
+               @bind="@Filter!.ClientName"
+               @bind:event="oninput">
+    </div>
+    <div class="col mt-4">
+        <input type="date"
+               class="form-control"
+               @bind="@Filter!.From"
+               @bind:event="oninput">
+    </div>
+    <div class="col mt-4">
+        <input type="date"
+               class="form-control"
+               @bind="@Filter!.To"
+               @bind:event="oninput">
+    </div>
+    <div class="col mt-4">
+        <InputSelect @bind-Value="@Filter.Status">
+            @foreach (var item in Enum.GetValues(typeof(StatusView)))
+            {
+                <option value="@item">@item</option>
+            }
+        </InputSelect>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public FilterRequestView? Filter { get; set; }
+}

@@ -1,0 +1,21 @@
+﻿<div class="container-fluid">
+    <div class="row" style="background-color:#161629; color:azure">
+        <div class="col"><h3>Client name</h3></div>
+        <div class="col"><h3>Price</h3></div>
+        <div class="col"><h3>Status</h3></div>
+        <div class="col"><h3>Date of creation</h3></div>
+        <div class="col"></div>
+    </div>
+    @foreach (var order in Orders!)
+    {
+        <Order Model=order
+           ResetOrders="@ResetOrders" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback ResetOrders { get; set; }
+    [Parameter]
+    public IList<OrderResponse>? Orders { get; set; }
+}

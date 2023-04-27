@@ -1,0 +1,52 @@
+﻿<div class="modal fade show justify-content-center" 
+    id="orderModal" 
+    style="display:block; background-color: rgba(10,10,10,.8);" 
+    aria-modal="true"
+    role="dialog"
+     @ondblclick="@ModalClose">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color:#161629; color:azure">
+                <h4 class="modal-title">@Title</h4>
+                <button type="button" 
+                    class="btn-close"
+                    style="color:azure"
+                    data-bs-dismiss="modal" 
+                    aria-label="Close"
+                        @onclick="@ModalClose"></button>
+            </div>
+            <div class="modal-body text-center" style="background-color:#4f2424; color:azure">
+                <InputSelect @bind-Value="@Model!.Status">
+                    @foreach (var item in Enum.GetValues(typeof(Status)))
+                    {
+                        <option value="@item">@item</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="modal-footer justify-content-center" style="background-color:#4f2424; color:azure">
+                <button type="button" class="btn btn-dark" @onclick=@ChangeStatus>Set status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public OrderResponse? Model { get; set; }
+    [Parameter]
+    public string? Title { get; set; }
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    private async Task ModalClose()
+    {
+        await OnClose.InvokeAsync(false);
+    }
+
+    private async Task ChangeStatus()
+    {
+        await OnSubmit.InvokeAsync();
+    }
+}

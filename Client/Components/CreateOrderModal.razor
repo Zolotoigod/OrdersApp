@@ -1,0 +1,63 @@
+﻿@using OrdersApp.Client.Services;
+@inject IApiClientService api
+@inject AuthenticationStateProvider authStateProvider
+
+<div class="modal fade show justify-content-center" 
+    id="orderModal" 
+    style="display:flex; background-color: rgba(10,10,10,.8);" 
+    aria-modal="true"
+    role="dialog"
+    @ondblclick="@ModalCancel">
+    <div class="modal-dialog">
+        <div style="width:130%;">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color:#161629; color:azure">
+                    <h4 class="modal-title">@Title</h4>
+                    <button type="button" 
+                        class="btn-close"
+                        style="color:azure"
+                        data-bs-dismiss="modal" 
+                        aria-label="Close"
+                        @onclick="@ModalCancel"></button>
+                </div>
+                <div class="modal-body" style="background-color:#4f2424">
+                    <OrderInput Input="@input" OnChangeSave="@ModalOk"/>
+                    <LineRequestList Lines="@Lines"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<LineRequest> Lines = new List<LineRequest>();
+    private UpdateRequest input = new UpdateRequest();
+
+    [Parameter]
+    public EventCallback ResetOrders { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+
+    private async Task ModalCancel()
+    {
+        await OnClose.InvokeAsync(false);
+    }
+
+    private async Task ModalOk()
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        var request = new OrderRequest()
+        {
+            ClientName = input.ClientName!,
+            AdditionalInfo = input.AdditionalInfo,
+            Lines = Lines,
+        };
+        await api.CreateOrder(request, token);
+        await ResetOrders.InvokeAsync();
+        await OnClose.InvokeAsync(true);
+    }
+}

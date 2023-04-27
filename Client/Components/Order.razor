@@ -1,0 +1,74 @@
+﻿@inject IApiClientService api
+@inject AuthenticationStateProvider authStateProvider
+
+<div class="row mt-2" style="background-color:#161629; color:azure; padding:5px">
+    <div class="col"><h3>@Model!.ClientName</h3></div>
+    <div class="col">@Model!.Price.ToString("C")</div>
+    <div class="col">@Model!.Status</div>
+    <div class="col">@Model.CreatedAt!.ToShortDateString()</div>
+    <div class="col">
+        <div class="d-grid gap-3 d-inline-flex">
+            <NavLink class="nav-link" href="@rout">
+                <button class="btn-dark">Order ditales</button>
+            </NavLink>
+            <button class="btn-dark btn-sm" @onclick="@OpenModalDialog">Change status</button>
+            <button class="btn-danger btn-sm" @onclick="@DeleteOrder" disabled=@isDisabled>Delete order</button>
+        </div>
+    </div>
+</div>
+
+@if(isChangeDialogOpen)
+{
+    <StatusChangeModal 
+        OnClose="@OnModalClose"
+        OnSubmit="@OnStatusChange"
+        Title="Please set new status"
+        Model="@Model"/>
+}
+
+@code {
+    private bool isChangeDialogOpen = false;
+    private bool isDisabled = false;
+    private string rout = null!;
+
+    [Parameter]
+    public OrderResponse? Model { get; set; }
+
+    [Parameter]
+    public EventCallback ResetOrders { get; set; }
+
+    protected override void OnInitialized()
+    {
+        isDisabled = Model!.Status != Status.New;
+        rout = $"order/{Model.Id}";
+        base.OnInitialized();
+    }
+
+    private async Task OnStatusChange()
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        await api.SetOrderStatus(Model!.Id, Model.Status, token);
+        isDisabled = Model!.Status != Status.New;
+        isChangeDialogOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task DeleteOrder()
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        await api.DeleteOrder(Model!.Id, token);
+        await ResetOrders.InvokeAsync();
+        StateHasChanged();
+    }
+
+    private void OpenModalDialog()
+    {
+        isChangeDialogOpen = true;
+    }
+
+    private void OnModalClose()
+    {
+        isChangeDialogOpen = false;
+        StateHasChanged();
+    }
+}

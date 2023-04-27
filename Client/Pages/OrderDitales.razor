@@ -1,0 +1,150 @@
+﻿@page "/order/{Id}"
+@inject IApiClientService api
+@inject AuthenticationStateProvider authStateProvider
+
+<ErrorBoundary>
+    <ChildContent>
+        <div class="container-fluid" style="background-color:#161629; color:azure">
+            <div class="d-flex justify-content-between ms-3">
+                <h2>Order ditales</h2>
+                <NavLink class="nav-link" href="/">
+                    <button class="btn-lg btn-dark">Back</button>
+                </NavLink>
+            </div>
+            <div class="border-light border-2 ms-3 mt-2 p-4" style="background-color:#4e0d0d; color:azure">
+                @if (isDisabled)
+                {
+                    <h3>Client name - @Model.ClientName</h3>
+                    <div class="justify-content-center">
+                        <h3>Additional info</h3>
+                        <p>@Model.AdditionalInfo</p>
+                    </div>
+                }
+                else
+                {
+                    <OrderInput Input="@InputData" OnChangeSave="@OnChangeSubmit" />
+                }
+                <h5>Price - @Model.Price.ToString("C")</h5>
+                <h5>Status - @Model.Status</h5>
+                <h5>Created - @Model.CreatedAt!.ToShortDateString()</h5>
+            </div>
+
+            <div class="container-fluid">
+                @foreach (var item in Model.Lines!)
+                {
+                    <div class="row mt-1 p-2" style="border-style:solid; border-radius:10px; background-color:#4e0d0d; color:azure">
+                        <div class="col">
+                            <h4>Product name - @item.ProductName</h4>
+                        </div>
+                        <div class="col">
+                            <h4>Product price - @item.Price.ToString("C")</h4>
+                        </div>
+                        @if (!isDisabled)
+                        {
+                            <div class="col d-flex justify-content-end align-items-center">
+                                <button class="btn-danger" @onclick="@(() => RemoveProduct(item.Id))">🗙</button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (!isDisabled)
+            {
+                <div class="row m-2 p-3">
+                    <div class="col">
+                        <input type="text"
+                           class="form-control"
+                           aria-label="Sizing example input"
+                           aria-describedby="inputGroup-sizing-default"
+                           placeholder="Product name"
+                           @bind="@setProductName"
+                           @bind:event="oninput">
+                    </div>
+                    <div class="col">
+                        <input type="number"
+                           class="form-control"
+                           aria-label="Sizing example input"
+                           aria-describedby="inputGroup-sizing-default"
+                           placeholder="Product price"
+                           @bind="@setPrice"
+                           @bind:event="oninput">
+                    </div>
+                    <div class="col">
+                        <button class="btn-primary"
+                            @onclick="AddProduct">
+                            Add product
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <ErrorContent>
+        <div class="container-fluid"
+             style="border-style:solid; border-radius:10px; background-color:#4e0d0d; color:azure">
+            <h2>Somethisngs goes wrong!</h2>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+
+
+@code {
+    private OrderResponse Model = new OrderResponse()
+    {
+        Lines = new List<LineResponse>() 
+    };
+    private UpdateRequest? InputData = new UpdateRequest();
+    private bool isDisabled = false;
+    private string? setProductName;
+    private decimal? setPrice;
+
+    [Parameter]
+    public string Id { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        Model = await api.GetOrder(Guid.Parse(Id), token);
+        InputData = new UpdateRequest()
+        { 
+            ClientName = Model.ClientName,
+            AdditionalInfo = Model.AdditionalInfo
+        };
+        isDisabled = Model.Status != Status.New;
+        await base.OnInitializedAsync();
+    }
+
+    private async Task RemoveProduct(Guid id)
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        await api.RemoveOrderLine(id, token);
+        Model = await api.GetOrder(Model!.Id, token);
+        StateHasChanged();
+    }
+
+    private async Task AddProduct()
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        var request = new LineRequest()
+        {
+            ProductName = setProductName,
+            Price = setPrice!.Value,
+        };
+
+        await api.AddOrderLine(Model!.Id, request, token);
+
+        setProductName = string.Empty;
+        setPrice = 0;
+        Model = await api.GetOrder(Model.Id, token);
+        StateHasChanged();
+    }
+
+    private async Task OnChangeSubmit()
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        await api.UpdateOrder(Model!.Id, InputData!, token);
+        Model = await api.GetOrder(Model.Id, token);
+        StateHasChanged();
+    }
+}

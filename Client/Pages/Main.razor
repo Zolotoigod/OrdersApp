@@ -1,0 +1,143 @@
+﻿@page "/"
+@using OrdersApp.Client.Services;
+@inject IApiClientService api
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@attribute [Authorize(Roles = "Administrator")]
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container-fluid" style="background-color:#4e0d0d; color:azure">
+            <h1>Hello @context!.User!.Identity!.Name</h1>
+            <div class="container-fluid text-center">
+                <h2>List of orders</h2>
+            </div>
+
+            <button class="btn-outline-primary m-2 p-3" @onclick=@Logout></button>
+
+            <div class="d-inline mt-4">
+                <FilterPanel Filter="@filterRequest" />
+
+                <div class="container-fluid justify-content-end text-end">
+                    <button class="btn-dark m-3"
+                            @onclick="@OnSearch">
+                        Search
+                    </button>
+
+                    <button class="btn-dark m-3"
+                            @onclick="@OpenModal">
+                        Add new order
+                    </button>
+                </div>
+        
+            </div>
+        </div>
+
+        @if (isModalOpen)
+        {
+            <CreateOrderModal
+                Title="Create new order"
+                OnClose="@OnModalClose"
+                ResetOrders="@FetchData" />
+        }
+
+        @if(Orders is null)
+        {
+            <h2>Loading...</h2>
+        }
+        else
+        {
+            <OrderList Orders=Orders 
+                ResetOrders="@FetchData"/>
+              <Pagination PageCount="@pageCount"
+                  OnPageSet="@GetPage"
+                  CurrentPage="@currentPage"/>
+        }
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private const int ordersOnPage = 10; // can modify to parametr
+
+    private int pageCount = 0;
+    private bool isModalOpen = false;
+    private int totalOrders = 0;
+    private int currentPage = 1;
+    private IList<OrderResponse>? Orders = new List<OrderResponse>();
+    private FilterRequestView filterRequest =
+    new FilterRequestView()
+    {
+            Skip = 0,
+            Take = 10,
+            Status = StatusView.All,
+            From = DateTime.Parse("01/01/1970"),
+            To = DateTime.UtcNow.AddDays(1),
+            ClientName = null,
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        filterRequest.Take = ordersOnPage;
+        filterRequest.Skip = ordersOnPage * (currentPage - 1);
+        await FetchData(filterRequest);
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnModalClose(bool accepted)
+    {
+        if (accepted)
+        {
+            await FetchData(filterRequest);
+        }
+
+        isModalOpen = false;
+        StateHasChanged();
+    }
+
+    private void OpenModal()
+    {
+        isModalOpen = true;
+    }
+
+    private async Task FetchData()
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        var response = await api.FindOrders(filterRequest, token);
+        totalOrders = await api.GetCount(filterRequest, token);
+        Orders = response;
+        StateHasChanged();
+    }
+
+    private async Task FetchData(FilterRequestView request)
+    {
+        var token = await ((OrderAuthenticationStateProvider)authStateProvider).GetToken();
+        Orders = null;
+        var response = await api.FindOrders(request, token);
+        totalOrders = await api.GetCount(request, token);
+        pageCount = totalOrders / ordersOnPage + 1;
+        Orders = response;
+        StateHasChanged();
+    }
+
+    private async Task GetPage(int pageNumber)
+    {
+        currentPage = pageNumber;
+        filterRequest.Skip = (pageNumber - 1) * ordersOnPage;
+        await FetchData(filterRequest);
+    }
+
+    private async Task OnSearch()
+    {
+        currentPage = 1;
+        filterRequest.Skip = 0;
+        await FetchData(filterRequest);
+        StateHasChanged();
+    }
+
+    private async Task Logout()
+    {
+        var authProvider = (OrderAuthenticationStateProvider)authStateProvider;
+        await authProvider.UpdateAuthenticationState(null);
+        navManager.NavigateTo("/login", true);
+    }
+}
