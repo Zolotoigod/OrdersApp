@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/orders"
 @using OrdersApp.Client.Services;
 @inject IApiClientService api
 @inject AuthenticationStateProvider authStateProvider
@@ -13,7 +13,7 @@
                 <h2>List of orders</h2>
             </div>
 
-            <button class="btn-outline-primary m-2 p-3" @onclick=@Logout></button>
+            <button class="btn-outline-primary m-2 p-3" @onclick=@Logout>Logout</button>
 
             <div class="d-inline mt-4">
                 <FilterPanel Filter="@filterRequest" />
@@ -138,6 +138,6 @@
     {
         var authProvider = (OrderAuthenticationStateProvider)authStateProvider;
         await authProvider.UpdateAuthenticationState(null);
-        navManager.NavigateTo("/login", true);
+        navManager.NavigateTo("/", true);
     }
 }

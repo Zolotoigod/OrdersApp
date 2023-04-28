@@ -1,4 +1,4 @@
-﻿@page "/login"
+﻿@page "/"
 @inject HttpClient httpClient
 @inject IJSRuntime js
 @inject AuthenticationStateProvider authStateProvider
@@ -34,7 +34,7 @@
             var session = await responce.Content.ReadFromJsonAsync<UserSession>();
             var authProvider = (OrderAuthenticationStateProvider)authStateProvider;
             await authProvider.UpdateAuthenticationState(session);
-            navManager.NavigateTo("/", true);
+            navManager.NavigateTo("/orders", true);
         }
         else if (responce.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
